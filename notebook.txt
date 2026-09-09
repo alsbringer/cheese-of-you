@@ -1,5 +1,0 @@
-sudah:
-- refactor x, y -> righ, left format
-- sesuaikan head dan bottom format sehingga bug collision ataupun ground jadi lebih sesuai
-current problem:
-    - saat melompat dan terjadi perpindahan ground_window -> ground_platform, otomatis memicu fall yang seharusnya fall ditrigger oleh ketinggian maksimum yang tercapai 
