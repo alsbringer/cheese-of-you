@@ -19,13 +19,18 @@ class Platforms(Entity):
         super().__init__(left, top, surface)
         self.active = False
         
-    def update_appearance(self):
+    def update_color(self):
         if self.active: pygame.draw.rect(self.surface, (255, 255, 255, 255), self.surface.get_rect(), width=2)
         else: pygame.draw.rect(self.surface, (0,0,0, 255), self.surface.get_rect(), width=2)
 
-    def reset_appearance(self):
+    def reset_color(self):
         self.surface.fill((0, 0, 0, 0))
+    
+    def resonate(self):
+        self.active = True
         
+    def calm(self):
+        self.active = False
                 
 class Player(Entity):
     def __init__(self, name, left, top, surface):

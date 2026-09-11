@@ -28,22 +28,21 @@ class Environment:
             
     def apply_collision_x(self):
         for platform in self.platforms:
-            platform.active = False
             for item in self.players + self.items:
                 if item.rect.colliderect(platform.rect):
-                    platform.active = True
+                    platform.resonate()
                     if item.velocity_x > 0: 
                         item.velocity_x = 0
                         item.rect.right = platform.rect.left
                     elif item.velocity_x < 0:
                         item.velocity_x = 0
                         item.rect.left = platform.rect.right
-      
+
     def apply_collision_y(self):
         for platform in self.platforms:
             for item in self.players + self.items:
                 if item.rect.colliderect(platform.rect):
-                    platform.active = True
+                    platform.resonate()
                     if item.velocity_y > 0: 
                         item.velocity_y = 0
                         item.rect.bottom = platform.rect.top
@@ -54,11 +53,18 @@ class Environment:
                         item.rect.top = platform.rect.bottom
                     if isinstance(item, Cheese):
                         item.velocity_x = 0
+
             
     def update_platform(self):
         for platform in self.platforms:
-            platform.update_appearance()
+            platform.update_color()
             
     def reset_platform(self):
         for platform in self.platforms:
-            platform.reset_appearance()
+            platform.reset_color()
+            platform.calm()
+            
+    def update_position(self):
+        for entity in self.players + self.items:
+            entity.update_x
+            
