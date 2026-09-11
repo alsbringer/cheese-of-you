@@ -1,26 +1,30 @@
-from entities import Player, Cheese, Platforms
+from entities import Player, Cheese, Platforms, Frame
+from effect import Effect
 from environment import Environment
 import pygame
 from os.path import join
-from utils import (
-    setSize_W, loadImage,
-    calc_align_right, calc_align_bottom,
-)
-
+from utils import setSize_W, loadImage, calc_align_right, calc_align_bottom
 from config import WINDOW_HEIGHT, WINDOW_WIDTH, BACKGROUND_IMG
-
-# --- Utility Functions ---
-def fade_on_approach(player_x, target_x, target_img):
-    distance = target_x - player_x
-    if distance <= 100:
-        target_img.set_alpha(int(255 * distance / 100))
-    else:
-        target_img.set_alpha(255)
-
 
 pygame.init()
 display = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 clock = pygame.time.Clock()
+
+# frame setup
+slash_0 = loadImage(join("assets", "sword", "slash-0.png")).convert_alpha()
+slash_0 = setSize_W(slash_0, 100)
+slash_1 = loadImage(join("assets", "sword", "slash-1.png")).convert_alpha()
+slash_1 = setSize_W(slash_1, 100)
+slash_2 = loadImage(join("assets", "sword", "slash-2.png")).convert_alpha()
+slash_2 = setSize_W(slash_2, 100)
+slash_3 = loadImage(join("assets", "sword", "slash-3.png")).convert_alpha()
+slash_3 = setSize_W(slash_3, 100)
+slash_images = [slash_0, slash_1, slash_2, slash_3]
+slash_rect = []
+for image in slash_images:
+    slash_rect_temp = Frame(left=0, top=0, surface=image)
+    slash_rect.append(slash_rect_temp)
+slash_effect = Effect(type="slash", frames=slash_rect, delay=3)
 
 # --- Platform Setup ---
 ground_height = 20
@@ -62,6 +66,7 @@ env.register_entity(ground)
 env.register_entity(platform1)
 env.register_entity(platform2)
 env.register_entity(cheese)
+env.register_effect(slash_effect)
 
 
 # --- Main Loop ---
@@ -81,6 +86,10 @@ while running:
                     if len(aglaea.carried) > 0:
                         aglaea.throw_item()
                     else: aglaea.pick_item(cheese)
+            if event.key == pygame.K_k:
+                for effect in env.effects:
+                    if  effect.type == "slash":
+                        effect.start_effect(aglaea)
     
     keys = pygame.key.get_pressed()
     aglaea.handle_input(keys)
@@ -89,6 +98,7 @@ while running:
 #==============================================PHYSICS==============================================
     env.reset_platform()
     env.apply_gravity(ground_height)
+    env.apply_effects()
     env.update_position()
     env.update_platform()
     
@@ -99,6 +109,7 @@ while running:
     display.blit(ground.surface, (ground.rect.left, ground.rect.top))
     display.blit(platform1.surface, (platform1.rect.left, platform1.rect.top))
     display.blit(platform2.surface, (platform2.rect.left, platform2.rect.top))
+    env.display_effect(display)
     
     
     display.blit(cheese.surface, cheese.rect)

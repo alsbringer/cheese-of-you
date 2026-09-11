@@ -1,6 +1,6 @@
-from entities import Player, Cheese, Platforms
-import pygame
-from config import WINDOW_HEIGHT, WINDOW_WIDTH, BACKGROUND_IMG
+from entities import Player, Cheese, Platforms, Frame
+from effect import Effect
+from config import WINDOW_HEIGHT
 
 class Environment:
     def __init__(self):
@@ -8,6 +8,7 @@ class Environment:
         self.players: list[Player] = []
         self.platforms: list[Platforms] = []
         self.items: list[Cheese] = []
+        self.effects: list[Effect] = []
 
     def register_entity(self, entity):
         if isinstance(entity, Player):
@@ -17,7 +18,10 @@ class Environment:
         elif isinstance(entity, Platforms):
             self.platforms.append(entity)
         else: print("object: ", entity, "belum terdaftar di environment")
-        
+    
+    def register_effect(self, effect):
+        self.effects.append(effect)
+    
     def apply_gravity(self, ground_height):
         for entity in self.players + self.items:
             if entity.rect.bottom >= WINDOW_HEIGHT:
@@ -74,3 +78,14 @@ class Environment:
         
             if isinstance(entity, Player): entity.update_carried_item()
             
+    
+    def apply_effects(self):
+        for effect in self.effects:
+            
+            if effect.type == "slash":
+                effect.update_effect()
+    
+    def display_effect(self, display):
+        for effect in self.effects:
+            if effect.active:
+                display.blit(effect.frames[effect.active_index].surface, effect.frames[effect.active_index].rect)

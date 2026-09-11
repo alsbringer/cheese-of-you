@@ -149,3 +149,16 @@ class Cheese(Entity):
         super().__init__( left, top, surface)  
         self.facing_right = True
         self.taken = False
+    
+    def fade_on_approach(player_x, target_x, target_img):
+        distance = target_x - player_x
+        if distance <= 100:
+            target_img.set_alpha(int(255 * distance / 100))
+        else:
+            target_img.set_alpha(255)
+
+class Frame(Entity):
+    def __init__(self, left, top, surface):
+        super().__init__(left, top, surface)
+        self.face_direction = "right"
+    
