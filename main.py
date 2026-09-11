@@ -88,20 +88,8 @@ while running:
     
 #==============================================PHYSICS==============================================
     env.reset_platform()
-
     env.apply_gravity(ground_height)
-        
-    if not cheese.taken: cheese.update_x()
-    aglaea.update_x()
-    caelus.update_x()
-    env.apply_collision_x()
-        
-    if not cheese.taken: cheese.update_y()
-    aglaea.update_y()
-    caelus.update_y()
-    env.apply_collision_y()
-    if cheese.taken: aglaea.update_carried_item()
-    
+    env.update_position()
     env.update_platform()
     
 # SECTION(RENDER)

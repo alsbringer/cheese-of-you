@@ -7,13 +7,22 @@ class Entity:
         self.rect = self.surface.get_rect(topleft=(left, top))
         self.velocity_y = 0
         self.velocity_x = 0
-        
+        self.allow_update = True
+    
     def update_x(self):
+        if self.allow_update:
             self.rect.left += self.velocity_x
             
     def update_y(self):
-        self.rect.top += self.velocity_y
+        if self.allow_update:
+            self.rect.top += self.velocity_y
+        
+    def disable_update(self):
+        self.allow_update = False
 
+    def enable_update(self):
+        self.allow_update = True
+        
 class Platforms(Entity):
     def __init__(self, left, top, surface):
         super().__init__(left, top, surface)
@@ -37,7 +46,7 @@ class Player(Entity):
         super().__init__(left, top, surface)
         self.name = name
         self.active_autopilot = False
-        self.carried = []
+        self.carried : Cheese= []
         self.max_carried = 2
         
         self.THROW_POWER_Y = 4
@@ -57,7 +66,7 @@ class Player(Entity):
         if keys[pygame.K_d]:
             self.velocity_x = min(self.max_speed, self.velocity_x + self.ACCELERATION)
             if self.face_direction != "right":
-                self.face_direction = "right"  #ciptakan momentum dimana prev dan face direction sama (mengindikasikan perubahan)
+                self.face_direction = "right"
                 self.prev_direction = "left" 
                 self.surface = flip_x(self.surface)
 
@@ -76,15 +85,15 @@ class Player(Entity):
             self.jump_left -= 1
     
     
-        
     def update_carried_item(self):
         if self.carried:
             for item in self.carried:
                 item.rect.bottom = self.rect.top + int(item.rect.width/3)
                 item.rect.centerx = self.rect.centerx
                 
-    def pick_item(self, item):
+    def pick_item(self, item : Cheese):
         item.taken = True
+        item.disable_update()
         self.carried.append(item)
     
     def throw_item(self):
@@ -93,15 +102,14 @@ class Player(Entity):
             if self.face_direction == "right":
                 item.velocity_x = self.THROW_POWER_X + self.velocity_x
             else: item.velocity_x = -self.THROW_POWER_X + self.velocity_x
-            
             item.taken = False
+            item.enable_update()
         self.carried.clear()
         
         
     def apply_autopilot(self):
         self.active_autopilot = not self.active_autopilot
 
-        
     def autopilot(self, target : Player, gap):
         if(self.active_autopilot):
             if target.velocity_y != 0:
@@ -135,11 +143,9 @@ class Player(Entity):
         elif self.velocity_x < 0 and self.face_direction != "left":
             self.face_direction = "left"
             self.surface = flip_x(self.surface)
-             
+    
 class Cheese(Entity):
     def __init__(self, left, top, surface):
         super().__init__( left, top, surface)  
-        # direction
         self.facing_right = True
-        # state
         self.taken = False

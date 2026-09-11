@@ -54,7 +54,6 @@ class Environment:
                     if isinstance(item, Cheese):
                         item.velocity_x = 0
 
-            
     def update_platform(self):
         for platform in self.platforms:
             platform.update_color()
@@ -66,5 +65,12 @@ class Environment:
             
     def update_position(self):
         for entity in self.players + self.items:
-            entity.update_x
+            if entity.allow_update:
+                entity.update_x()
+                self.apply_collision_x()
+                    
+                entity.update_y()
+                self.apply_collision_y()
+        
+            if isinstance(entity, Player): entity.update_carried_item()
             
