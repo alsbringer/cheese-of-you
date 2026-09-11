@@ -17,6 +17,15 @@ class Entity:
 class Platforms(Entity):
     def __init__(self, left, top, surface):
         super().__init__(left, top, surface)
+        self.active = False
+        
+    def update_appearance(self):
+        if self.active: pygame.draw.rect(self.surface, (255, 255, 255, 255), self.surface.get_rect(), width=2)
+        else: pygame.draw.rect(self.surface, (0,0,0, 255), self.surface.get_rect(), width=2)
+
+    def reset_appearance(self):
+        self.surface.fill((0, 0, 0, 0))
+        
                 
 class Player(Entity):
     def __init__(self, name, left, top, surface):

@@ -10,8 +10,6 @@ from utils import (
 from config import WINDOW_HEIGHT, WINDOW_WIDTH, BACKGROUND_IMG
 
 # --- Utility Functions ---
-
-
 def fade_on_approach(player_x, target_x, target_img):
     distance = target_x - player_x
     if distance <= 100:
@@ -27,7 +25,7 @@ clock = pygame.time.Clock()
 # --- Platform Setup ---
 ground_height = 20
 box0 = pygame.Surface((WINDOW_WIDTH, ground_height), pygame.SRCALPHA)
-pygame.draw.rect(box0, (255, 255, 255), (0, 0, WINDOW_WIDTH, ground_height), width=4)
+pygame.draw.rect(box0, (255, 255, 255), (0, 0, WINDOW_WIDTH, ground_height), width=2)
 ground = Platforms(left=0, top=calc_align_bottom(WINDOW_HEIGHT, box0), surface=box0)
 
 box1 = pygame.Surface((100,100), pygame.SRCALPHA)
@@ -89,9 +87,10 @@ while running:
     caelus.autopilot(target=aglaea, gap=10)
     
 #==============================================PHYSICS==============================================
+    env.reset_platform()
+
     env.apply_gravity(ground_height)
-    env.draw_platform(color=(0, 0, 0, 255))
-    
+        
     if not cheese.taken: cheese.update_x()
     aglaea.update_x()
     caelus.update_x()
@@ -101,10 +100,9 @@ while running:
     aglaea.update_y()
     caelus.update_y()
     env.apply_collision_y()
-    
     if cheese.taken: aglaea.update_carried_item()
     
-    
+    env.update_platform()
     
 # SECTION(RENDER)
     display.blit(BACKGROUND_IMG, (0,0))
@@ -116,7 +114,6 @@ while running:
     
     
     display.blit(cheese.surface, cheese.rect)
-    
     pygame.display.update()
     clock.tick(60)
 
