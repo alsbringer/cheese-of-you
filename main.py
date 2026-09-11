@@ -80,7 +80,7 @@ while running:
             if event.key == pygame.K_SPACE:
                 aglaea.jump()
             if event.key == pygame.K_p:
-                caelus.apply_autopilot()
+                caelus.apply_autopilot(env.items)
             if event.key == pygame.K_f:
                 if aglaea.rect.colliderect(cheese.rect):
                     if len(aglaea.carried) > 0:

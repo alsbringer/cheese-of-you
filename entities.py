@@ -46,6 +46,7 @@ class Player(Entity):
         super().__init__(left, top, surface)
         self.name = name
         self.active_autopilot = False
+        self.autopilot_items : list[Cheese] = []
         self.carried : Cheese= []
         self.max_carried = 2
         
@@ -107,16 +108,19 @@ class Player(Entity):
         self.carried.clear()
         
         
-    def apply_autopilot(self):
+    def apply_autopilot(self, item_list):
         self.active_autopilot = not self.active_autopilot
+        self.autopilot_items = item_list
 
     def autopilot(self, target : Player, gap):
         if(self.active_autopilot):
+            self.THROW_POWER_Y = 10
+            self.THROW_POWER_X = 10
             if target.velocity_y != 0:
                 self.velocity_y = target.velocity_y
             # jika target gerak ke kanan
             if target.face_direction == "right" or target.velocity_x > 0:
-                if (self.rect.left > target.rect.left): # jika self di depan pindahkan ke belakang target
+                if (self.rect.left > target.rect.left): # jika self di kanan pindahkan ke belakang target
                     self.velocity_x = -self.max_speed
                 elif ( self.rect.right <= target.rect.left - gap): # ikuti traget jika berada di depan
                     self.velocity_x  = target.velocity_x
@@ -131,18 +135,27 @@ class Player(Entity):
                     self.velocity_x  = target.velocity_x
                 elif (self.rect.left < target.rect.centerx) and self.rect.left >= target.rect.right : # berhenti jika self kiri melewati tengah dan berada di kanan
                     self.velocity_x  = 0
+                    
+            # flip sesuai direction
+            if self.velocity_x > 0 and self.face_direction != "right":
+                self.face_direction = "right"
+                self.surface = flip_x(self.surface)
+                
+            elif self.velocity_x < 0 and self.face_direction != "left":
+                self.face_direction = "left"
+                self.surface = flip_x(self.surface)
+                   
+            # take cheese automaticly
+            for item in self.autopilot_items:
+                if self.rect.colliderect(item.rect) and not item.taken:
+                    self.pick_item(item)
         else:
             self.velocity_x = 0
             
-        
-        
-        if self.velocity_x > 0 and self.face_direction != "right":
-            self.face_direction = "right"
-            self.surface = flip_x(self.surface)
+            self.throw_item()
             
-        elif self.velocity_x < 0 and self.face_direction != "left":
-            self.face_direction = "left"
-            self.surface = flip_x(self.surface)
+        
+       
     
 class Cheese(Entity):
     def __init__(self, left, top, surface):
