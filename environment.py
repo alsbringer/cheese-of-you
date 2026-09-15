@@ -1,6 +1,6 @@
 from entities import Player, Cheese, Platforms, Frame
-from effect import Effect
-from config import WINDOW_HEIGHT
+from skill import Skill
+from config import WINDOW_HEIGHT, BACKGROUND_IMG
 
 class Environment:
     def __init__(self):
@@ -8,28 +8,16 @@ class Environment:
         self.players: list[Player] = []
         self.platforms: list[Platforms] = []
         self.items: list[Cheese] = []
-        self.effects: list[Effect] = []
+        self.skills: list[Skill] = []
 
-    def register_entity(self, entity):
-        if isinstance(entity, Player):
-            self.players.append(entity)
-        elif isinstance(entity, Cheese):
-            self.items.append(entity)
-        elif isinstance(entity, Platforms):
-            self.platforms.append(entity)
-        else: print("object: ", entity, "belum terdaftar di environment")
-    
-    def register_effect(self, effect):
-        self.effects.append(effect)
-    
-    def apply_gravity(self, ground_height):
-        for entity in self.players + self.items:
-            if entity.rect.bottom >= WINDOW_HEIGHT:
-                entity.velocity_y = 0
-                entity.rect.bottom = WINDOW_HEIGHT - ground_height
-            else:
-                entity.velocity_y += self.gravity
-            
+    # auto
+    def register_skills(self):
+        for player in self.players:
+            if player.skills:
+                for skill in player.skills:
+                    self.skills.append(skill)
+                    # print("skiil", skill.name, "berhasil ditambahkan ke environmen")
+
     def apply_collision_x(self):
         for platform in self.platforms:
             for item in self.players + self.items:
@@ -66,26 +54,53 @@ class Environment:
         for platform in self.platforms:
             platform.reset_color()
             platform.calm()
-            
-    def update_position(self):
-        for entity in self.players + self.items:
-            if entity.allow_update:
-                entity.update_x()
-                self.apply_collision_x()
-                    
-                entity.update_y()
-                self.apply_collision_y()
-        
-            if isinstance(entity, Player): entity.update_carried_item()
-            
     
-    def apply_effects(self):
-        for effect in self.effects:
-            
-            if effect.type == "slash":
-                effect.update_effect()
-    
-    def display_effect(self, display):
-        for effect in self.effects:
+    def display_skill(self, display):
+        for effect in self.skills:
             if effect.active:
-                display.blit(effect.frames[effect.active_index].surface, effect.frames[effect.active_index].rect)
+                current_frame = effect.frames[effect.active_index]
+                display.blit(current_frame.surface, current_frame.rect)
+    
+    
+    # used
+    def register_entity(self, entity):
+            if isinstance(entity, Player):
+                self.players.append(entity)
+            elif isinstance(entity, Cheese):
+                self.items.append(entity)
+            elif isinstance(entity, Platforms):
+                self.platforms.append(entity)
+            else: print("object: ", entity, "belum terdaftar di environment")
+        
+    def apply_gravity(self, ground_height):
+        for entity in self.players + self.items:
+            if entity.rect.bottom >= WINDOW_HEIGHT:
+                entity.velocity_y = 0
+                entity.rect.bottom = WINDOW_HEIGHT - ground_height
+            else:
+                entity.velocity_y += self.gravity
+            
+    def apply_skill(self):
+        for skill in self.skills:
+            skill.update_skill()
+            
+    def update_all(self):
+            self.reset_platform()
+
+            for entity in self.players + self.items:
+                if entity.allow_update:
+                    entity.update_x()
+                    self.apply_collision_x()
+                        
+                    entity.update_y()
+                    self.apply_collision_y()
+            
+                if isinstance(entity, Player): entity.update_carried_item()
+
+            self.update_platform()
+                
+    def display_all(self,display):
+        display.blit(BACKGROUND_IMG, (0,0))
+        for entity in self.platforms + self.players + self.items:
+            display.blit(entity.surface, (entity.rect.left, entity.rect.top))
+        self.display_skill(display)

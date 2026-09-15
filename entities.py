@@ -1,5 +1,6 @@
 import pygame
 from utils import flip_x
+from skill import Skill
 
 class Entity:
     def __init__(self, left, top, surface):
@@ -44,11 +45,14 @@ class Platforms(Entity):
 class Player(Entity):
     def __init__(self, name, left, top, surface):
         super().__init__(left, top, surface)
+        self.current_state = "idle"
         self.name = name
         self.active_autopilot = False
         self.autopilot_items : list[Cheese] = []
         self.carried : Cheese= []
         self.max_carried = 2
+        self.skills: list[Skill] = []
+        self.states = {}
         
         self.THROW_POWER_Y = 4
         self.THROW_POWER_X = 6
@@ -62,6 +66,11 @@ class Player(Entity):
         self.max_speed = 10
         self.face_direction = "right"
         self.prev_direction = "left"
+        
+        # for state (temporary)
+        self.counter = -1 
+        self.active_index = 0
+        self.delay = 8
         
     def handle_input(self, keys):
         if keys[pygame.K_d]:
@@ -85,7 +94,7 @@ class Player(Entity):
             self.velocity_y = self.JUMP_FORCE
             self.jump_left -= 1
     
-    
+    # item
     def update_carried_item(self):
         if self.carried:
             for item in self.carried:
@@ -106,8 +115,8 @@ class Player(Entity):
             item.taken = False
             item.enable_update()
         self.carried.clear()
-        
-        
+    
+    # autopilot
     def apply_autopilot(self, item_list):
         self.active_autopilot = not self.active_autopilot
         self.autopilot_items = item_list
@@ -153,10 +162,42 @@ class Player(Entity):
             self.velocity_x = 0
             
             self.throw_item()
-            
-        
-       
     
+    #skill
+    def add_skill(self, skill):
+        self.skills.append(skill)
+        
+    def use_skill(self, skill_name):
+        for skill in self.skills:
+            if skill_name == skill.name:
+                skill.cast_skill(self)
+                return
+        print("skill not found")
+    
+    #animation_state
+    def add_state(self, state_name, state_frame):
+        self.states.update({state_name: state_frame})
+        
+    def update_current_surf(self, status):
+        if status in self.states:
+            frames : list[Frame]= self.states[status]
+            
+            for frame in frames:
+                if frame.face_direction != self.face_direction:
+                    frame.surface = flip_x(frame.surface)
+                    frame.face_direction = self.face_direction
+                                    
+            self.counter += 1
+            if self.counter >= self.delay:
+                self.counter = 0 # reset frame counter
+                
+                self.active_index = (self.active_index) % len(frames)
+                self.surface = frames[self.active_index].surface
+                self.active_index += 1
+            
+        else: print("status:", status, "not found")
+
+        
 class Cheese(Entity):
     def __init__(self, left, top, surface):
         super().__init__( left, top, surface)  

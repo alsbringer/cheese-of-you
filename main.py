@@ -1,5 +1,5 @@
 from entities import Player, Cheese, Platforms, Frame
-from effect import Effect
+from skill import Skill
 from environment import Environment
 import pygame
 from os.path import join
@@ -11,20 +11,23 @@ display = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 clock = pygame.time.Clock()
 
 # frame setup
-slash_0 = loadImage(join("assets", "sword", "slash-0.png")).convert_alpha()
-slash_0 = setSize_W(slash_0, 100)
-slash_1 = loadImage(join("assets", "sword", "slash-1.png")).convert_alpha()
-slash_1 = setSize_W(slash_1, 100)
-slash_2 = loadImage(join("assets", "sword", "slash-2.png")).convert_alpha()
-slash_2 = setSize_W(slash_2, 100)
-slash_3 = loadImage(join("assets", "sword", "slash-3.png")).convert_alpha()
-slash_3 = setSize_W(slash_3, 100)
-slash_images = [slash_0, slash_1, slash_2, slash_3]
-slash_rect = []
-for image in slash_images:
-    slash_rect_temp = Frame(left=0, top=0, surface=image)
-    slash_rect.append(slash_rect_temp)
-slash_effect = Effect(type="slash", frames=slash_rect, delay=3)
+#skill_slash
+skill_paths = ["slash-0.png", "slash-1.png", "slash-2.png", "slash-3.png"]
+skill_frames = []
+for path in skill_paths:
+    img = loadImage(join("assets", "sword", path)).convert_alpha()
+    img = setSize_W(img, 100)
+    skill_frames.append(Frame(left=0, top=0, surface=img))
+basic_attack = Skill(type="slash", name="basic_attack", frames=skill_frames, delay=3)
+
+#state_idle
+idle_paths = ["agy_idle_0.png", "agy_idle_1.png", "agy_idle_2.png", "agy_idle_3.png"]
+idle_frames = []
+for path in idle_paths:
+    img = loadImage(join("assets", "aglaea", path)).convert_alpha()
+    img = setSize_W(img, 100)
+    idle_frames.append(Frame(left=0, top=0, surface=img))
+
 
 # --- Platform Setup ---
 ground_height = 20
@@ -45,6 +48,8 @@ aglaea_surf_init = loadImage(join("assets","aglaea","agy-1.png")).convert_alpha(
 aglaea_surf_init = setSize_W(aglaea_surf_init, 100)
 aglaea_top_init = WINDOW_HEIGHT - aglaea_surf_init.get_height() - ground_height
 aglaea = Player( name="aglaea", left = 20,  top= aglaea_top_init, surface=aglaea_surf_init)
+aglaea.add_skill(basic_attack)
+aglaea.add_state(state_name="idle", state_frame=idle_frames)
 
 caelus_suf = loadImage(join("assets","caelus","caelus-0.jpe")).convert_alpha()
 caelus_suf = setSize_W(caelus_suf, 100)
@@ -66,8 +71,7 @@ env.register_entity(ground)
 env.register_entity(platform1)
 env.register_entity(platform2)
 env.register_entity(cheese)
-env.register_effect(slash_effect)
-
+env.register_skills()
 
 # --- Main Loop ---
 running = True
@@ -87,32 +91,22 @@ while running:
                         aglaea.throw_item()
                     else: aglaea.pick_item(cheese)
             if event.key == pygame.K_k:
-                for effect in env.effects:
-                    if  effect.type == "slash":
-                        effect.start_effect(aglaea)
+                aglaea.use_skill("basic_attack")
     
     keys = pygame.key.get_pressed()
     aglaea.handle_input(keys)
     caelus.autopilot(target=aglaea, gap=10)
     
 #==============================================PHYSICS==============================================
-    env.reset_platform()
+    aglaea.update_current_surf("idle")
+    
     env.apply_gravity(ground_height)
-    env.apply_effects()
-    env.update_position()
-    env.update_platform()
-    
-# SECTION(RENDER)
-    display.blit(BACKGROUND_IMG, (0,0))
-    display.blit(aglaea.surface, (aglaea.rect.left, aglaea.rect.top))
-    display.blit(caelus.surface, (caelus.rect.left, caelus.rect.top))
-    display.blit(ground.surface, (ground.rect.left, ground.rect.top))
-    display.blit(platform1.surface, (platform1.rect.left, platform1.rect.top))
-    display.blit(platform2.surface, (platform2.rect.left, platform2.rect.top))
-    env.display_effect(display)
+    env.apply_skill()
     
     
-    display.blit(cheese.surface, cheese.rect)
+    env.update_all()
+    env.display_all(display)
+    
     pygame.display.update()
     clock.tick(60)
 

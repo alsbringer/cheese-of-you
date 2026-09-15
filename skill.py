@@ -1,18 +1,18 @@
-from entities import Player, Frame
 from utils import flip_x
 
-class Effect():
-    def __init__(self,type, frames, delay):
-        self.type = "slash"
+class Skill():
+    def __init__(self,type,name , frames, delay):
+        self.name = name
+        self.type = type
         self.active = False
-        self.frames: list[Frame] = frames
+        self.frames = frames
         self.active_index = 0
-        self.target: Player = None
+        self.counter = -1
+        self.target = None
         self.margin = 10
-        self.timer = 0
         self.delay = delay
-        
-    def update_effect(self):
+                
+    def update_skill(self):
         for frame in self.frames:
             if self.target:
                 if frame.face_direction != self.target.face_direction:
@@ -25,21 +25,24 @@ class Effect():
                 elif self.target.face_direction == "left":
                     frame.rect.right = self.target.rect.left + self.margin
                     frame.rect.centery = self.target.rect.centery
-
-        if self.active:            
-            self.timer += 1
-            if self.timer >= self.delay:
-                self.active_index+=1
-                self.timer = 0
+        if self.active:
+            self.counter += 1
+            if self.counter >= self.delay:
+                self.counter = 0 # reset frame counter
+                self.active_index = (self.active_index) % len(self.frames)
+                self.current_frame = self.frames[self.active_index]
+                print("current frame: ", self.active_index)
+                self.active_index += 1
                 if self.active_index >= len(self.frames):
                     self.active_index = 0
-                    self.end_effect()
+                    self.close_skill()
             
-    def start_effect(self, target : Player):
+    def cast_skill(self, target):
         self.active = True
         self.target = target
         for frame in self.frames:
             frame.face_direction = target.face_direction
         
-    def end_effect(self):
+    def close_skill(self):
+        print("deactive dipanggil")
         self.active = False
