@@ -20,12 +20,12 @@ class Effect():
                     frame.face_direction = self.target.face_direction
             
                 if self.target.face_direction == "right":
-                    frame.rect.left = self.target.rect.right -self.margin # atur posisi frame sesuai target
+                    frame.rect.left = self.target.rect.right -self.margin 
                     frame.rect.centery = self.target.rect.centery
                 elif self.target.face_direction == "left":
                     frame.rect.right = self.target.rect.left + self.margin
                     frame.rect.centery = self.target.rect.centery
-        
+
         if self.active:            
             self.timer += 1
             if self.timer >= self.delay:

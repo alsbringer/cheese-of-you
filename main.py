@@ -41,7 +41,7 @@ pygame.draw.rect(box2, (0, 255, 0), (0, 0, 100,100), width=2)
 platform2 = Platforms(left=calc_align_right(WINDOW_WIDTH, box2) - 400, top= calc_align_bottom(WINDOW_HEIGHT, box2) - ground_height, surface=box2 )
 
 # --- Player Setup ---
-aglaea_surf_init = loadImage(join("assets","aglaea","agy-1.jpe")).convert_alpha()
+aglaea_surf_init = loadImage(join("assets","aglaea","agy-1.png")).convert_alpha()
 aglaea_surf_init = setSize_W(aglaea_surf_init, 100)
 aglaea_top_init = WINDOW_HEIGHT - aglaea_surf_init.get_height() - ground_height
 aglaea = Player( name="aglaea", left = 20,  top= aglaea_top_init, surface=aglaea_surf_init)
@@ -49,7 +49,7 @@ aglaea = Player( name="aglaea", left = 20,  top= aglaea_top_init, surface=aglaea
 caelus_suf = loadImage(join("assets","caelus","caelus-0.jpe")).convert_alpha()
 caelus_suf = setSize_W(caelus_suf, 100)
 caelus_top = WINDOW_HEIGHT - caelus_suf.get_height() - ground_height
-caelus = Player( name="aglaea", left = 0,  top= caelus_top, surface=caelus_suf)
+caelus = Player( name="caelus", left = 0,  top= caelus_top, surface=caelus_suf)
 
 # --- Cheese Setup ---
 cheese_initial_img = loadImage(join("assets","cheese.png")).convert_alpha()
