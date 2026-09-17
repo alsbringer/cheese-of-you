@@ -1,10 +1,10 @@
 from entities import Player, Cheese, Platforms, Frame
 from skill import Skill
-from environment import Environment
+from system import Environment, System
 import pygame
 from os.path import join
 from utils import setSize_W, loadImage, calc_align_right, calc_align_bottom
-from config import WINDOW_HEIGHT, WINDOW_WIDTH, BACKGROUND_IMG
+from assets.config import WINDOW_HEIGHT, WINDOW_WIDTH, BACKGROUND_IMG
 
 pygame.init()
 display = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -20,13 +20,20 @@ for path in skill_paths:
     skill_frames.append(Frame(left=0, top=0, surface=img))
 basic_attack = Skill(type="slash", name="basic_attack", frames=skill_frames, delay=3)
 
-#state_idle
-idle_paths = ["agy_idle_0.png", "agy_idle_1.png", "agy_idle_2.png", "agy_idle_3.png"]
+#state
+idle_paths = ["aglaea_idle_0001.png", "aglaea_idle_0002.png", "aglaea_idle_0003.png", "aglaea_idle_0004.png"]
 idle_frames = []
 for path in idle_paths:
     img = loadImage(join("assets", "aglaea", path)).convert_alpha()
     img = setSize_W(img, 100)
     idle_frames.append(Frame(left=0, top=0, surface=img))
+
+walk_paths = ["aglaea_walk2_0001.png", "aglaea_walk2_0002.png", "aglaea_walk2_0003.png", "aglaea_walk2_0004.png"]
+walk_frames = []
+for path in walk_paths:
+    img = loadImage(join("assets", "aglaea", path)).convert_alpha()
+    img = setSize_W(img, 100)
+    walk_frames.append(Frame(left=0, top=0, surface=img))
 
 
 # --- Platform Setup ---
@@ -44,14 +51,15 @@ pygame.draw.rect(box2, (0, 255, 0), (0, 0, 100,100), width=2)
 platform2 = Platforms(left=calc_align_right(WINDOW_WIDTH, box2) - 400, top= calc_align_bottom(WINDOW_HEIGHT, box2) - ground_height, surface=box2 )
 
 # --- Player Setup ---
-aglaea_surf_init = loadImage(join("assets","aglaea","agy-1.png")).convert_alpha()
+aglaea_surf_init = loadImage(join("assets","aglaea","aglaea_idle_0001.png")).convert_alpha()
 aglaea_surf_init = setSize_W(aglaea_surf_init, 100)
 aglaea_top_init = WINDOW_HEIGHT - aglaea_surf_init.get_height() - ground_height
 aglaea = Player( name="aglaea", left = 20,  top= aglaea_top_init, surface=aglaea_surf_init)
 aglaea.add_skill(basic_attack)
 aglaea.add_state(state_name="idle", state_frame=idle_frames)
+aglaea.add_state(state_name="walking", state_frame=walk_frames)
 
-caelus_suf = loadImage(join("assets","caelus","caelus-0.jpe")).convert_alpha()
+caelus_suf = loadImage(join("assets","caelus","caelus_idle.png")).convert_alpha()
 caelus_suf = setSize_W(caelus_suf, 100)
 caelus_top = WINDOW_HEIGHT - caelus_suf.get_height() - ground_height
 caelus = Player( name="caelus", left = 0,  top= caelus_top, surface=caelus_suf)
@@ -72,10 +80,12 @@ env.register_entity(platform1)
 env.register_entity(platform2)
 env.register_entity(cheese)
 env.register_skills()
+print(f"registrasi result:\n player: {env.players}\n platform: {env.platforms} \n items: {env.items}")
 
 # --- Main Loop ---
 running = True
 while running:
+    
 #===============================================INPUT==============================================
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -95,10 +105,10 @@ while running:
     
     keys = pygame.key.get_pressed()
     aglaea.handle_input(keys)
-    caelus.autopilot(target=aglaea, gap=10)
+    caelus.autopilot(lover=aglaea, gap=10)
     
 #==============================================PHYSICS==============================================
-    aglaea.update_current_surf("idle")
+    aglaea.update_current_surf(aglaea.current_state)
     
     env.apply_gravity(ground_height)
     env.apply_skill()

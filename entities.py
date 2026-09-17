@@ -9,7 +9,20 @@ class Entity:
         self.velocity_y = 0
         self.velocity_x = 0
         self.allow_update = True
+        self.mask = pygame.mask.from_surface(self.surface)
+        
+        #stats
+        self.max_hp = 1000
+        self.damage = 100
+        self.current_hp = self.max_hp
+        
+    #stats
+    def take_damage(self, damage):
+        self.current_hp -= damage
+        print("current_hp:", self.current_hp)
+        
     
+    #posistionng
     def update_x(self):
         if self.allow_update:
             self.rect.left += self.velocity_x
@@ -74,6 +87,7 @@ class Player(Entity):
         
     def handle_input(self, keys):
         if keys[pygame.K_d]:
+            self.current_state = "walking"
             self.velocity_x = min(self.max_speed, self.velocity_x + self.ACCELERATION)
             if self.face_direction != "right":
                 self.face_direction = "right"
@@ -81,15 +95,19 @@ class Player(Entity):
                 self.surface = flip_x(self.surface)
 
         elif keys[pygame.K_a]:
+            self.current_state = "walking"
             self.velocity_x = max(-self.max_speed, self.velocity_x - self.ACCELERATION)
             if self.face_direction != "left":
                 self.prev_direction = "right"
                 self.face_direction = "left"
                 self.surface = flip_x(self.surface)
                 
-        else : self.velocity_x = 0
+        else : 
+            self.velocity_x = 0
+            self.current_state = "idle"
     
     def jump(self):
+        print("jump")
         if self.jump_left > 0:
             self.velocity_y = self.JUMP_FORCE
             self.jump_left -= 1
@@ -121,29 +139,44 @@ class Player(Entity):
         self.active_autopilot = not self.active_autopilot
         self.autopilot_items = item_list
 
-    def autopilot(self, target : Player, gap):
+    def autopilot(self, lover : Player, gap):
+        im_behind_you = False
+        self.THROW_POWER_Y = 10
+        self.THROW_POWER_X = 10    
         if(self.active_autopilot):
-            self.THROW_POWER_Y = 10
-            self.THROW_POWER_X = 10
-            if target.velocity_y != 0:
-                self.velocity_y = target.velocity_y
+            if lover.velocity_y != 0: self.velocity_y = lover.velocity_y
+            if lover.face_direction == "right":
+                if self.rect.right <= lover.rect.centerx - gap:
+                    im_behind_you = True
+                    print("caelus: i'm behind you Aya")
+                else: im_behind_you = False
+
+            elif lover.face_direction == "left":
+                if lover.rect.centerx + gap <= self.rect.left:
+                    im_behind_you = True
+                    print("caelus: i'm behind you Aya><")
+                else: im_behind_you = False
+
             # jika target gerak ke kanan
-            if target.face_direction == "right" or target.velocity_x > 0:
-                if (self.rect.left > target.rect.left): # jika self di kanan pindahkan ke belakang target
+            if lover.face_direction == "right":
+                if im_behind_you:
+                    self.velocity_x = lover.velocity_x
+                    if self.face_direction != lover.face_direction:
+                        self.face_direction = "right"
+                        self.surface = flip_x(self.surface)
+                else:
                     self.velocity_x = -self.max_speed
-                elif ( self.rect.right <= target.rect.left - gap): # ikuti traget jika berada di depan
-                    self.velocity_x  = target.velocity_x
-                elif (self.rect.right >= target.rect.centerx) and (self.rect.right < target.rect.left ): # berhenti sampai menabrak target dan atur posisi dan jika target sebeumnya ada di kiri
-                    self.velocity_x  = 0
-                
+
             # jika target gerak ke kiri
-            elif target.face_direction == "left" or target.velocity_x < 0:
-                if (self.rect.right < target.rect.right):# jika self di kiri target
+            elif lover.face_direction == "left":
+                if im_behind_you:
+                    self.velocity_x = lover.velocity_x
+                    if self.face_direction != lover.face_direction:
+                        self.face_direction = "left"
+                        self.surface = flip_x(self.surface)
+                else:
                     self.velocity_x = self.max_speed
-                elif (self.rect.left >= target.rect.right + gap): # ikuti terget jika self sudah berada di depan
-                    self.velocity_x  = target.velocity_x
-                elif (self.rect.left < target.rect.centerx) and self.rect.left >= target.rect.right : # berhenti jika self kiri melewati tengah dan berada di kanan
-                    self.velocity_x  = 0
+
                     
             # flip sesuai direction
             if self.velocity_x > 0 and self.face_direction != "right":
@@ -153,14 +186,13 @@ class Player(Entity):
             elif self.velocity_x < 0 and self.face_direction != "left":
                 self.face_direction = "left"
                 self.surface = flip_x(self.surface)
-                   
+    
             # take cheese automaticly
             for item in self.autopilot_items:
                 if self.rect.colliderect(item.rect) and not item.taken:
                     self.pick_item(item)
         else:
             self.velocity_x = 0
-            
             self.throw_item()
     
     #skill
@@ -179,20 +211,24 @@ class Player(Entity):
         self.states.update({state_name: state_frame})
         
     def update_current_surf(self, status):
+        # print("status: ", status)
         if status in self.states:
             frames : list[Frame]= self.states[status]
+            # print("frame: ", len(frames))
             
+            # flip frame
             for frame in frames:
                 if frame.face_direction != self.face_direction:
                     frame.surface = flip_x(frame.surface)
                     frame.face_direction = self.face_direction
-                                    
+            
+            #set frame        
             self.counter += 1
             if self.counter >= self.delay:
                 self.counter = 0 # reset frame counter
-                
                 self.active_index = (self.active_index) % len(frames)
                 self.surface = frames[self.active_index].surface
+                self.mask = pygame.mask.from_surface(self.surface)
                 self.active_index += 1
             
         else: print("status:", status, "not found")
