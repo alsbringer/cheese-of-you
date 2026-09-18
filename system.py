@@ -27,7 +27,7 @@ class Database:
     
 
 class Environment:
-    def __init__(self, database, camera : Camera):
+    def __init__(self, database, camera : CameraSystem):
         self.camera = camera
         self.gravity = 1
         self.database = database
@@ -118,11 +118,20 @@ class Environment:
                 current_frame = effect.frames[effect.active_index]
                 display.blit(current_frame.surface, (current_frame.rect.left - self.camera.camera_x, current_frame.rect.top- self.camera.camera_y))
         
-class Camera:
-    def __init__(self):
-        self.camera_x = 0
-        self.camera_y = 0
+class CameraSystem:
+    def __init__(self, target):
+        self.camera_x = target.rect.centerx - WINDOW_WIDTH/2
+        self.camera_y = target.rect.centery - WINDOW_HEIGHT/2 - 100
     
     def update_camera(self, target: Player):
-        self.camera_x = target.rect.centerx - WINDOW_WIDTH/2
+        right_treshold = self.camera_x + WINDOW_WIDTH/2 + target.rect.width
+        left_treshold = self.camera_x + WINDOW_WIDTH/2 - target.rect.width
+
+        if target.rect.centerx > right_treshold :
+            print("melwati treshold kanan")
+            self.camera_x = target.rect.centerx - WINDOW_WIDTH/2 - target.rect.width
+
+        elif target.rect.centerx < left_treshold:
+            print("melwati treshold kiri")
+            self.camera_x = target.rect.centerx - WINDOW_WIDTH/2  + target.rect.width
         self.camera_y = target.rect.centery - WINDOW_HEIGHT/2 - 100

@@ -1,6 +1,6 @@
 from entities import Player, Cheese, Platforms, Frame
 from skill import Skill
-from system import Environment, Database, Camera
+from system import Environment, Database, CameraSystem
 import pygame
 from os.path import join
 from utils import setSize_W, loadImage, calc_align_right, calc_align_bottom
@@ -73,7 +73,7 @@ cheese = Cheese(top=cheese_initial_top, left=cheese_initial_left, surface=cheese
 
 # --- environment setup ==
 db = Database()
-cam = Camera()
+cam = CameraSystem(aglaea)
 db.register_entity(aglaea)
 db.register_entity(caelus)
 db.register_entity(ground)
