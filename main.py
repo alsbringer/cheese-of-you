@@ -1,6 +1,6 @@
 from entities import Player, Cheese, Platforms, Frame
 from skill import Skill
-from system import Environment, System
+from system import Environment, Database
 import pygame
 from os.path import join
 from utils import setSize_W, loadImage, calc_align_right, calc_align_bottom
@@ -72,15 +72,15 @@ cheese_initial_left = calc_align_right(WINDOW_WIDTH, cheese_initial_img) - chees
 cheese = Cheese(top=cheese_initial_top, left=cheese_initial_left, surface=cheese_initial_img)
 
 # --- environment setup ==
-env = Environment()
-env.register_entity(aglaea)
-env.register_entity(caelus)
-env.register_entity(ground)
-env.register_entity(platform1)
-env.register_entity(platform2)
-env.register_entity(cheese)
-env.register_skills()
-print(f"registrasi result:\n player: {env.players}\n platform: {env.platforms} \n items: {env.items}")
+db = Database()
+db.register_entity(aglaea)
+db.register_entity(caelus)
+db.register_entity(ground)
+db.register_entity(platform1)
+db.register_entity(platform2)
+db.register_entity(cheese)
+env = Environment(db)
+print(f"registrasi result:\n player: {env.database.players}\n platform: {env.database.platforms} \n items: {env.database.items}")
 
 # --- Main Loop ---
 running = True
@@ -94,7 +94,7 @@ while running:
             if event.key == pygame.K_SPACE:
                 aglaea.jump()
             if event.key == pygame.K_p:
-                caelus.apply_autopilot(env.items)
+                caelus.apply_autopilot(env.database.items)
             if event.key == pygame.K_f:
                 if aglaea.rect.colliderect(cheese.rect):
                     if len(aglaea.carried) > 0:

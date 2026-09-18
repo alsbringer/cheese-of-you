@@ -136,8 +136,14 @@ class Player(Entity):
     
     # autopilot
     def apply_autopilot(self, item_list):
-        self.active_autopilot = not self.active_autopilot
-        self.autopilot_items = item_list
+        if self.active_autopilot:
+            self.autopilot_items = []
+            self.active_autopilot = False
+            self.velocity_x = 0
+            self.throw_item()
+        else:
+            self.active_autopilot = True
+            self.autopilot_items = item_list
 
     def autopilot(self, lover : Player, gap):
         im_behind_you = False
@@ -146,13 +152,13 @@ class Player(Entity):
         if(self.active_autopilot):
             if lover.velocity_y != 0: self.velocity_y = lover.velocity_y
             if lover.face_direction == "right":
-                if self.rect.right <= lover.rect.centerx - gap:
+                if self.rect.right <= lover.rect.left - gap:
                     im_behind_you = True
                     print("caelus: i'm behind you Aya")
                 else: im_behind_you = False
 
             elif lover.face_direction == "left":
-                if lover.rect.centerx + gap <= self.rect.left:
+                if lover.rect.right + gap <= self.rect.left:
                     im_behind_you = True
                     print("caelus: i'm behind you Aya><")
                 else: im_behind_you = False
@@ -164,8 +170,8 @@ class Player(Entity):
                     if self.face_direction != lover.face_direction:
                         self.face_direction = "right"
                         self.surface = flip_x(self.surface)
-                else:
-                    self.velocity_x = -self.max_speed
+                elif not im_behind_you and (self.rect.left < lover.rect.centerx - gap or self.rect.left > lover.rect.right + lover.rect.width):
+                        self.velocity_x = -self.max_speed
 
             # jika target gerak ke kiri
             elif lover.face_direction == "left":
@@ -174,7 +180,7 @@ class Player(Entity):
                     if self.face_direction != lover.face_direction:
                         self.face_direction = "left"
                         self.surface = flip_x(self.surface)
-                else:
+                elif not im_behind_you and (self.rect.right > lover.rect.centerx+gap or self.rect.right < lover.rect.left - lover.rect.width):
                     self.velocity_x = self.max_speed
 
                     
@@ -191,9 +197,7 @@ class Player(Entity):
             for item in self.autopilot_items:
                 if self.rect.colliderect(item.rect) and not item.taken:
                     self.pick_item(item)
-        else:
-            self.velocity_x = 0
-            self.throw_item()
+            
     
     #skill
     def add_skill(self, skill):
