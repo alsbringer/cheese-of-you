@@ -2,3 +2,166 @@ A: LEFT
 D: RIGHT
 SPACE: JUMP
 K : ATTACK
+F : Pick items
+
+
+
+classes
+
+Database: nyimpen data setiap entitas
+Environtment: handle collision, apply gravity, handle update order, handle display order
+Entities: blueprien objek rect, rapikan later
+    def __init__(self, left, top, surface):
+        self.surface = surface
+        self.rect = self.surface.get_rect(topleft=(left, top))
+        self.velocity_y = 0
+        self.velocity_x = 0
+        self.allow_update = True
+        self.mask = pygame.mask.from_surface(self.surface)
+        self.max_hp = 1000
+        self.damage = 100
+        self.current_hp = self.max_hp    
+    def take_damage(self)    
+    def update_x(self):
+    def update_y(self):
+    def disable_update(self):
+    def enable_update(self):
+
+class Platforms(Entity):
+    def __init__(self, left, top, surface):
+        super().__init__(left, top, surface)
+        self.active = False
+    def update_color(self):
+    def reset_color(self):
+    def resonate(self):
+    def calm(self):
+                
+class Player(Entity):
+    def __init__(self, name, left, top, surface):
+        super().__init__(left, top, surface)
+        self.current_state = "idle"
+        self.name = name
+        self.active_autopilot = False
+        self.autopilot_items : list[Cheese] = []
+        self.carried : Cheese= []
+        self.max_carried = 2
+        self.skills: list[Skill] = []
+        self.states = {}
+        
+        self.THROW_POWER_Y = 4
+        self.THROW_POWER_X = 6
+                
+        # jumping state
+        self.JUMP_FORCE = -16
+        self.jump_left = 2
+                
+        # direction state
+        self.ACCELERATION = 1
+        self.max_speed = 10
+        self.face_direction = "right"
+        self.prev_direction = "left"
+        
+        # for state (temporary)
+        self.counter = -1 
+        self.active_index = 0
+        self.delay = 8
+        
+    def handle_input(self, keys):
+    def jump(self):
+    def update_carried_item(self):
+    def pick_item(self, item : Cheese):
+    def throw_item(self):
+    def apply_autopilot(self, item_list):
+    def autopilot(self, lover : Player, gap):
+        im_behind_you = False
+        self.THROW_POWER_Y = 10
+        self.THROW_POWER_X = 10    
+        if(self.active_autopilot):
+            if lover.velocity_y != 0: self.velocity_y = lover.velocity_y
+            if lover.face_direction == "right":
+                if self.rect.right <= lover.rect.left - gap:
+                    im_behind_you = True
+                    print("caelus: i'm behind you Aya")
+                else: im_behind_you = False
+
+            elif lover.face_direction == "left":
+                if lover.rect.right + gap <= self.rect.left:
+                    im_behind_you = True
+                    print("caelus: i'm behind you Aya><")
+                else: im_behind_you = False
+
+            # jika target gerak ke kanan
+            if lover.face_direction == "right":
+                if im_behind_you:
+                    self.velocity_x = lover.velocity_x
+                    if self.face_direction != lover.face_direction:
+                        self.face_direction = "right"
+                        self.surface = flip_x(self.surface)
+                elif not im_behind_you and (self.rect.left < lover.rect.centerx - gap or self.rect.left > lover.rect.right + lover.rect.width):
+                        self.velocity_x = -self.max_speed
+
+            # jika target gerak ke kiri
+            elif lover.face_direction == "left":
+                if im_behind_you:
+                    self.velocity_x = lover.velocity_x
+                    if self.face_direction != lover.face_direction:
+                        self.face_direction = "left"
+                        self.surface = flip_x(self.surface)
+                elif not im_behind_you and (self.rect.right > lover.rect.centerx+gap or self.rect.right < lover.rect.left - lover.rect.width):
+                    self.velocity_x = self.max_speed
+
+                    
+            # flip sesuai direction
+            if self.velocity_x > 0 and self.face_direction != "right":
+                self.face_direction = "right"
+                self.surface = flip_x(self.surface)
+                
+            elif self.velocity_x < 0 and self.face_direction != "left":
+                self.face_direction = "left"
+                self.surface = flip_x(self.surface)
+    
+            # take cheese automaticly
+            for item in self.autopilot_items:
+                if self.rect.colliderect(item.rect) and not item.taken:
+                    self.pick_item(item)
+            
+
+    def add_skill(self, skill):
+    def use_skill(self, skill_name):
+    def add_state(self, state_name, state_frame):
+    def update_current_surf(self, status):
+        
+class Cheese(Entity):
+    def __init__(self, left, top, surface):
+        super().__init__( left, top, surface)  
+        self.facing_right = True
+        self.taken = False
+    
+    def fade_on_approach(player_x, target_x, target_img):
+
+class Frame(Entity):
+    def __init__(self, left, top, surface):
+        super().__init__(left, top, surface)
+        self.face_direction = "right"
+
+
+from utils import flip_x
+
+class Skill():
+    def __init__(self,type,name , frames, delay):
+        self.name = name
+        self.type = type
+        self.active = False
+        self.frames = frames
+        self.active_index = 0
+        self.counter = -1
+        self.user = None
+        self.margin = 10
+        self.delay = delay
+        self.damage = 100
+        self.hit = set()
+    def set_hit(self, entity):
+    def update_skill(self):
+    def cast_skill(self, target):
+    def close_skill(self):
+

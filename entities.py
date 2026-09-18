@@ -154,13 +154,11 @@ class Player(Entity):
             if lover.face_direction == "right":
                 if self.rect.right <= lover.rect.left - gap:
                     im_behind_you = True
-                    print("caelus: i'm behind you Aya")
                 else: im_behind_you = False
 
             elif lover.face_direction == "left":
                 if lover.rect.right + gap <= self.rect.left:
                     im_behind_you = True
-                    print("caelus: i'm behind you Aya><")
                 else: im_behind_you = False
 
             # jika target gerak ke kanan
