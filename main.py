@@ -1,13 +1,13 @@
 from entities import Player, Cheese, Platforms, Frame
 from skill import Skill
-from system import Environment, Database, CameraSystem
+from system import Environment, Database, CameraSystem, HealthSystem
 import pygame
 from os.path import join
 from utils import setSize_W, loadImage, calc_align_right, calc_align_bottom
 from assets.config import WINDOW_HEIGHT, WINDOW_WIDTH, BACKGROUND_IMG
 
 pygame.init()
-display = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 clock = pygame.time.Clock()
 
 # frame setup
@@ -74,13 +74,14 @@ cheese = Cheese(top=cheese_initial_top, left=cheese_initial_left, surface=cheese
 # --- environment setup ==
 db = Database()
 cam = CameraSystem(aglaea)
+hs = HealthSystem()
 db.register_entity(aglaea)
 db.register_entity(caelus)
 db.register_entity(ground)
 db.register_entity(platform1)
 db.register_entity(platform2)
 db.register_entity(cheese)
-env = Environment(db, cam)
+env = Environment(db, cam, hs)
 print(f"registrasi result:\n player: {env.database.players}\n platform: {env.database.platforms} \n items: {env.database.items}")
 
 # --- Main Loop ---
@@ -116,7 +117,7 @@ while running:
     
     
     env.update_all()
-    env.display_all(display)
+    env.draw_all(window)
     
     pygame.display.update()
     clock.tick(60)

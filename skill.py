@@ -27,7 +27,6 @@ class Skill():
                 if frame.face_direction != self.user.face_direction:
                     frame.surface = flip_x(frame.surface)
                     frame.face_direction = self.user.face_direction
-                    print("we flip")
             
                 if self.user.face_direction == "right":
                     frame.rect.left = self.user.rect.right -self.margin 
