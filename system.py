@@ -79,13 +79,7 @@ class Environment:
     def apply_gravity(self, ground_height):
         ground = WINDOW_HEIGHT - ground_height
         for entity in self.database.players + self.database.items:
-            if entity.rect.bottom >= ground and entity.velocity_y > 0:
-                entity.velocity_y = 0
-                entity.rect.bottom = ground
-                if isinstance(entity, Player):
-                    entity.jump_left = 2
-            else:
-                entity.velocity_y += self.gravity
+            entity.velocity_y += self.gravity
             
     def apply_skill(self):
         for skill in self.database.skills:
@@ -129,18 +123,27 @@ class Environment:
 class CameraSystem:
     def __init__(self, target):
         self.camera_x = target.rect.centerx - WINDOW_WIDTH/2
-        self.camera_y = target.rect.centery - WINDOW_HEIGHT/2 - 100
+        self.camera_y = target.rect.centery - WINDOW_HEIGHT/2 
     
     def update_camera(self, target: Player):
         right_treshold = self.camera_x + WINDOW_WIDTH/2 + target.rect.width
         left_treshold = self.camera_x + WINDOW_WIDTH/2 - target.rect.width
+        top_treshold = self.camera_y + WINDOW_HEIGHT/2 - target.rect.height
+        bottom_treshold = self.camera_y + WINDOW_HEIGHT/2 + target.rect.height
 
         if target.rect.centerx > right_treshold :
             self.camera_x = target.rect.centerx - WINDOW_WIDTH/2 - target.rect.width
 
         elif target.rect.centerx < left_treshold:
             self.camera_x = target.rect.centerx - WINDOW_WIDTH/2  + target.rect.width
-        self.camera_y = target.rect.centery - WINDOW_HEIGHT/2 - 100
+        
+        if target.rect.centery > bottom_treshold :
+            print("bottom tresh")
+            self.camera_y = target.rect.centery - WINDOW_HEIGHT/2 - target.rect.height
+
+        elif target.rect.centery < top_treshold:
+            self.camera_y = target.rect.centery - WINDOW_HEIGHT/2  + target.rect.height
+        
         
     
 class HealthSystem:
